@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TRS Autoregulation Calculator</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom styles for Inter font and rounded corners */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f4f8; /* Light gray background */
+        }
+        .container {
+            max-width: 900px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background-color: #ffffff;
+            border-radius: 1.5rem; /* More rounded corners */
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+        input, select {
+            border-radius: 0.75rem; /* Rounded corners for inputs/selects */
+            padding: 0.75rem;
+            border: 1px solid #cbd5e1; /* Light border */
+            width: 100%;
+        }
+        button {
+            border-radius: 0.75rem;
+            padding: 0.75rem 1.5rem;
+            background-color: #3b82f6; /* Blue button */
+            color: white;
+            font-weight: bold;
+            transition: background-color 0.2s;
+        }
+        button:hover {
+            background-color: #2563eb; /* Darker blue on hover */
+        }
+        .result-box {
+            background-color: #e0f2fe; /* Light blue background for results */
+            border-radius: 0.75rem;
+            padding: 1.25rem;
+            border: 1px solid #bfdbfe;
+        }
+        .header-section {
+            background-color: #1a202c; /* Dark header background */
+            color: white;
+            padding: 1.5rem 2rem;
+            border-top-left-radius: 1.5rem;
+            border-top-right-radius: 1.5rem;
+            text-align: center;
+        }
+        .footer-section {
+            background-color: #e2e8f0; /* Light footer background */
+            color: #4a5568;
+            padding: 1rem 2rem;
+            border-bottom-left-radius: 1.5rem;
+            border-bottom-right-radius: 1.5rem;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center py-8 px-4">
+    <div class="container">
+        <!-- Header Section -->
+        <div class="header-section mb-6 -mt-8 -mx-8">
+            <h1 class="text-3xl font-extrabold mb-2">TRS Autoregulation Calculator</h1>
+            <p class="text-lg font-light opacity-90">Bridge scientific structure with real-life readiness</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Client Inputs Section -->
+            <div class="p-6 bg-gray-50 rounded-xl shadow-inner">
+                <h2 class="text-xl font-semibold mb-4 text-gray-800">Your Inputs</h2>
+
+                <div class="mb-4">
+                    <label for="threeRm" class="block text-gray-700 text-sm font-medium mb-2">3RM (Strength Lifts):</label>
+                    <input type="number" id="threeRm" class="form-input" placeholder="e.g., 100" min="0">
+                </div>
+
+                <div class="mb-4">
+                    <label for="tenRm" class="block text-gray-700 text-sm font-medium mb-2">10RM (Q&D / Power Work):</label>
+                    <input type="number" id="tenRm" class="form-input" placeholder="e.g., 80" min="0">
+                </div>
+
+                <div class="mb-4">
+                    <label for="weeklyBlock" class="block text-gray-700 text-sm font-medium mb-2">Weekly Block:</label>
+                    <select id="weeklyBlock" class="form-select">
+                        <option value="">Select Block</option>
+                        <option value="Heavy">Heavy</option>
+                        <option value="Light">Light</option>
+                        <option value="Heaviest">Heaviest</option>
+                        <option value="Lightest">Lightest</option>
+                    </select>
+                </div>
+
+                <div class="mb-6">
+                    <label for="trafficLight" class="block text-gray-700 text-sm font-medium mb-2">Today's Readiness (Traffic Light):</label>
+                    <select id="trafficLight" class="form-select">
+                        <option value="">Select Readiness</option>
+                        <option value="Green">Green</option>
+                        <option value="Yellow">Yellow</option>
+                        <option value="Red">Red</option>
+                    </select>
+                </div>
+
+                <button id="calculateBtn" class="w-full text-lg">Calculate My Load</button>
+            </div>
+
+            <!-- Results Section -->
+            <div class="p-6 bg-blue-50 rounded-xl shadow-inner flex flex-col justify-between">
+                <div>
+                    <h2 class="text-xl font-semibold mb-4 text-blue-800">Your Calculated Load</h2>
+
+                    <div class="result-box mb-4">
+                        <h3 class="text-lg font-semibold text-blue-700 mb-2">🏋️‍♂️ Strength Target:</h3>
+                        <p id="strengthResult" class="text-gray-900 text-base">Fill in the details to see your strength target.</p>
+                    </div>
+
+                    <div class="result-box">
+                        <h3 class="text-lg font-semibold text-blue-700 mb-2">⚡ Power Target:</h3>
+                        <p id="powerResult" class="text-gray-900 text-base">Fill in the details to see your power target.</p>
+                    </div>
+                </div>
+
+                <!-- Message Box for errors/info -->
+                <div id="messageBox" class="mt-6 p-4 text-sm text-red-700 bg-red-100 border border-red-200 rounded-lg hidden">
+                    Please fill in all input fields and select options.
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer Section -->
+        <div class="footer-section mt-6 -mb-8 -mx-8">
+            <p>&copy; 2025 TRS Calculator. Your Body Gets The Final Vote.</p>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Get DOM elements
+            const threeRmInput = document.getElementById('threeRm');
+            const tenRmInput = document.getElementById('tenRm');
+            const weeklyBlockSelect = document.getElementById('weeklyBlock');
+            const trafficLightSelect = document.getElementById('trafficLight');
+            const calculateBtn = document.getElementById('calculateBtn');
+            const strengthResultDiv = document.getElementById('strengthResult');
+            const powerResultDiv = document.getElementById('powerResult');
+            const messageBox = document.getElementById('messageBox');
+
+            // Load saved RMs from local storage
+            const savedThreeRm = localStorage.getItem('trsThreeRm');
+            const savedTenRm = localStorage.getItem('trsTenRm');
+
+            if (savedThreeRm) {
+                threeRmInput.value = savedThreeRm;
+            }
+            if (savedTenRm) {
+                tenRmInput.value = savedTenRm;
+            }
+
+            // Function to display messages (instead of alert)
+            function showMessage(message, type = 'error') {
+                messageBox.textContent = message;
+                messageBox.className = `mt-6 p-4 text-sm rounded-lg ${
+                    type === 'error' ? 'text-red-700 bg-red-100 border border-red-200' : 'text-green-700 bg-green-100 border border-green-200'
+                }`;
+                messageBox.classList.remove('hidden');
+            }
+
+            // Function to hide messages
+            function hideMessage() {
+                messageBox.classList.add('hidden');
+            }
+
+            // Calculation Logic
+            function calculateLoad() {
+                hideMessage(); // Clear previous messages
+
+                const threeRm = parseFloat(threeRmInput.value);
+                const tenRm = parseFloat(tenRmInput.value);
+                const weeklyBlock = weeklyBlockSelect.value;
+                const trafficLight = trafficLightSelect.value;
+
+                // Validate inputs
+                if (isNaN(threeRm) || isNaN(tenRm) || weeklyBlock === '' || trafficLight === '') {
+                    showMessage('Please fill in all input fields and select options.');
+                    strengthResultDiv.textContent = 'Fill in the details to see your strength target.';
+                    powerResultDiv.textContent = 'Fill in the details to see your power target.';
+                    return;
+                }
+
+                // Save RMs to local storage
+                localStorage.setItem('trsThreeRm', threeRm);
+                localStorage.setItem('trsTenRm', tenRm);
+
+                let strengthPercentage, strengthSets, powerPercentage, powerSets;
+
+                // Strength Calculation Logic
+                switch (weeklyBlock) {
+                    case 'Heavy':
+                        if (trafficLight === 'Green') {
+                            strengthPercentage = 85;
+                            strengthSets = 'x sets';
+                        } else if (trafficLight === 'Yellow') {
+                            strengthPercentage = 80;
+                            strengthSets = 'x reduced sets';
+                        } else { // Red
+                            strengthPercentage = null; // No percentage, mobility only
+                            strengthSets = 'Mobility only';
+                        }
+                        break;
+                    case 'Light':
+                        if (trafficLight === 'Green') {
+                            strengthPercentage = 75;
+                            strengthSets = 'x sets';
+                        } else if (trafficLight === 'Yellow') {
+                            strengthPercentage = 70;
+                            strengthSets = 'x reduced sets';
+                        } else { // Red
+                            strengthPercentage = null; // No percentage, rest
+                            strengthSets = 'Rest';
+                        }
+                        break;
+                    case 'Heaviest':
+                        if (trafficLight === 'Green') {
+                            strengthPercentage = 90; // Range 90-92, picking 90
+                            strengthSets = 'x sets';
+                        } else if (trafficLight === 'Yellow') {
+                            strengthPercentage = 85;
+                            strengthSets = 'x reduced sets';
+                        } else { // Red
+                            strengthPercentage = null; // No percentage, breathwork + walk
+                            strengthSets = 'Breathwork + walk';
+                        }
+                        break;
+                    case 'Lightest':
+                        if (trafficLight === 'Green') {
+                            strengthPercentage = 70;
+                            strengthSets = 'x sets';
+                        } else if (trafficLight === 'Yellow') {
+                            strengthPercentage = 65;
+                            strengthSets = 'x reduced sets';
+                        } else { // Red
+                            strengthPercentage = null; // No percentage, full rest
+                            strengthSets = 'Full rest';
+                        }
+                        break;
+                }
+
+                // Power Calculation Logic
+                switch (weeklyBlock) {
+                    case 'Heavy':
+                        if (trafficLight === 'Green') {
+                            powerPercentage = 75;
+                            powerSets = ''; // Assuming sets not specified, just percentage
+                        } else if (trafficLight === 'Yellow') {
+                            powerPercentage = 65;
+                            powerSets = 'Movement flow';
+                        } else { // Red
+                            powerPercentage = null; // No percentage, movement flow
+                            powerSets = 'Movement flow';
+                        }
+                        break;
+                    case 'Light':
+                        if (trafficLight === 'Green') {
+                            powerPercentage = 65;
+                            powerSets = '';
+                        } else if (trafficLight === 'Yellow') {
+                            powerPercentage = 60;
+                            powerSets = '';
+                        } else { // Red
+                            powerPercentage = null; // No percentage, rest
+                            powerSets = 'Rest';
+                        }
+                        break;
+                    case 'Heaviest':
+                        if (trafficLight === 'Green') {
+                            powerPercentage = 80;
+                            powerSets = '';
+                        } else if (trafficLight === 'Yellow') {
+                            powerPercentage = 70;
+                            powerSets = '';
+                        } else { // Red
+                            powerPercentage = null; // No percentage, skip session
+                            powerSets = 'Skip session';
+                        }
+                        break;
+                    case 'Lightest':
+                        if (trafficLight === 'Green') {
+                            powerPercentage = 60;
+                            powerSets = '';
+                        } else if (trafficLight === 'Yellow') {
+                            powerPercentage = 55;
+                            powerSets = '';
+                        } else { // Red
+                            powerPercentage = null; // No percentage, rest
+                            powerSets = 'Rest';
+                        }
+                        break;
+                }
+
+                // Display Strength Result
+                if (strengthPercentage !== null) {
+                    const strengthLoad = (threeRm * strengthPercentage / 100).toFixed(1);
+                    strengthResultDiv.innerHTML = `Target: <span class="font-bold text-blue-900">${strengthPercentage}%</span> of 3RM (${strengthLoad} kg) - <span class="font-bold text-blue-900">${strengthSets}</span>`;
+                } else {
+                    strengthResultDiv.innerHTML = `Action: <span class="font-bold text-blue-900">${strengthSets}</span>`;
+                }
+
+                // Display Power Result
+                if (powerPercentage !== null) {
+                    const powerLoad = (tenRm * powerPercentage / 100).toFixed(1);
+                    powerResultDiv.innerHTML = `Target: <span class="font-bold text-blue-900">${powerPercentage}%</span> of 10RM (${powerLoad} kg) - <span class="font-bold text-blue-900">${powerSets}</span>`;
+                } else {
+                    powerResultDiv.innerHTML = `Action: <span class="font-bold text-blue-900">${powerSets}</span>`;
+                }
+            }
+
+            // Event Listener for Calculate Button
+            calculateBtn.addEventListener('click', calculateLoad);
+
+            // Optional: Recalculate on input change for a more dynamic feel
+            threeRmInput.addEventListener('input', calculateLoad);
+            tenRmInput.addEventListener('input', calculateLoad);
+            weeklyBlockSelect.addEventListener('change', calculateLoad);
+            trafficLightSelect.addEventListener('change', calculateLoad);
+
+            // Initial calculation if RMs are pre-filled
+            if (savedThreeRm && savedTenRm) {
+                calculateLoad();
+            }
+        });
+    </script>
+</body>
+</html>
